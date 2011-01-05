@@ -1,0 +1,34 @@
+Pyram - Python parameter optimization library
+
+Brandyn Allen White (bwhite@dappervision.com)
+
+Often in programming (especially machine learning) you end up with pesky tunable parameters that could be the difference between your program working and not.  This library exposes a variety of optimization methods in a form that is extremely simple to use.  You provide a fitness_func and parameters and you are given an iterator of (fitness, params).  Each optimizer takes the form of
+
+Args:
+    fitness_func: Fitness function that takes keyword arguments whos values
+        are keys in 'parameters'.  Each keyword argument takes a float.
+        The fitness function returns a float that we seek to maximize.
+    parameters: Dict with keys as parameter names and values as
+        (low, high, resolution) where generated parameters are [low, high)
+        and resolution is a hint at the relevant scale of the parameter.
+
+Yields:
+    Iterator of (fitness, params) where
+    fitness: The value returned by the fitness_func given params
+    params: Dict whos keys are those in parameters and values are floats
+
+
+Example where we use a simple fitness function (- x * x) that we want to maximize.  Note that since it is negative the best we can do is 0 as 0 = -2x implies x = 0 is optimal.  First we show how to do this as a grid where we simply try every grid location using the resolution as a step size.  Second we show how to do this by sampling within the provided bounds and considering 1000 samples.  Each invocation is done on a single line to make the example concise; however, this is generally not a good practice.
+
+>>> import itertools
+>>> import pyram
+>>> max_fitness, max_params = max(pyram.uniform_grid(lambda x: -x * x, {'x': (-1000, 1000, 1)}))
+>>> print max_fitness
+0
+>>> print max_params
+{'x': 0}
+>>> max_fitness, max_params = max(itertools.islice(pyram.uniform_random_sample(lambda x: -x * x, {'x': (-1000, 1000, 1)}), 1000))
+>>> print max_fitness
+-0.110340128913
+>>> print max_params
+{'x': -0.33217484689964749}

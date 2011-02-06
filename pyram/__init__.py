@@ -27,6 +27,35 @@ def uniform_grid(fitness_func, parameters):
         yield fitness_func(**params), params
 
 
+def exponential_grid(fitness_func, parameters):
+    """Exponential parameter optimization that checks all possible values
+
+    Values are visited in a grid order, linear in log space with the step being
+    the log of the resolution.  Take care not to use 0 as it will cause
+    problems when taking the log.
+
+    If a parameter bounds are (.1, 10**5, 10) then the values used are
+    [10**-2, 10**-1, 10**1, 10**2, 10**3, 10**4]
+
+    Args:
+        fitness_func: Fitness function that takes keyword arguments whos values
+            are keys in 'parameters'.  Each keyword argument takes a float.
+            The fitness function returns a float that we seek to maximize.
+        parameters: Dict with keys as parameter names and values as
+            (low, high, resolution) where generated parameters are [low, high)
+            and resolution is a hint at the relevant scale of the parameter.
+
+    Yields:
+        Iterator of (fitness, params) where
+        fitness: The value returned by the fitness_func given params
+        params: Dict whos keys are those in parameters and values are floats
+    """
+    ranges = [np.exp2(np.arange(*np.log2(x))) for x in parameters.values()]
+    for param_values in itertools.product(*ranges):
+        params = dict(zip(parameters, param_values))
+        yield fitness_func(**params), params
+
+
 def uniform_random(fitness_func, parameters):
     """Uniform parameter optimization that checks all possible values
 
